@@ -37,7 +37,7 @@ export const getAllProjects = async (
 
     const outputProjects = projects.map((project) => {
       if (token) {
-        // Use token to check is user liked the project
+        // Use token to check whether the user has liked the project
         liked = project.likes.includes(decodedToken.userId);
       }
 
@@ -92,7 +92,7 @@ export const getProjectById = async (
     }
 
     if (token && decodedToken) {
-      // Use token to check is user liked the project
+      // Use token to check whether the user has liked the project
       liked = project.likes.includes(decodedToken.userId);
     }
 

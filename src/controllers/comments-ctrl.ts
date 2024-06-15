@@ -1,4 +1,6 @@
 import { NextFunction, Request, Response } from "express";
+import { jwtDecode } from "jwt-decode";
+import { JwtPayload } from "jsonwebtoken";
 import { AddCommentBody, ReplyCommentBody } from "../types/comment-types";
 import { Comment } from "../models/comment-model";
 import { Project } from "../models/project-model";
@@ -10,6 +12,14 @@ export const getCommentsByProjectId = async (
   next: NextFunction
 ) => {
   const pid = req.params.pid;
+  let liked: boolean = false;
+  let decodedToken: JwtPayload | undefined;
+
+  // Get token from cookie and decode it
+  const token: string = await req.cookies.token;
+  if (token) {
+    decodedToken = jwtDecode<JwtPayload>(token);
+  }
 
   try {
     const comments = await Comment.find({
@@ -21,6 +31,11 @@ export const getCommentsByProjectId = async (
     }
 
     const response = comments.map((comment) => {
+      if (token && decodedToken) {
+        // Use token to check whether the user has liked the comment
+        liked = comment.likes.includes(decodedToken.userId);
+      }
+
       return {
         _id: comment._id,
         projectId: comment.projectId,
@@ -30,6 +45,7 @@ export const getCommentsByProjectId = async (
         hasReply: comment.hasReply,
         totalLikes: comment.likes.length,
         totalDislikes: comment.dislikes.length,
+        liked,
         createdAt: comment.createdAt,
         updatedAt: comment.updatedAt,
       };
@@ -49,6 +65,14 @@ export const getRepliesComment = async (
 ) => {
   const projectId = req.params.pid;
   const groupId = req.params.gid;
+  let liked: boolean = false;
+  let decodedToken: JwtPayload | undefined;
+
+  // Get token from cookie and decode it
+  const token: string = await req.cookies.token;
+  if (token) {
+    decodedToken = jwtDecode<JwtPayload>(token);
+  }
 
   try {
     const replies = await Comment.find({
@@ -56,6 +80,11 @@ export const getRepliesComment = async (
     }).populate("sender", "username role -_id");
 
     const response = replies.map((reply) => {
+      if (token && decodedToken) {
+        // Use token to check whether the user has liked the comment
+        liked = reply.likes.includes(decodedToken.userId);
+      }
+
       return {
         _id: reply._id,
         projectId: reply.projectId,
@@ -65,6 +94,7 @@ export const getRepliesComment = async (
         totalLikes: reply.likes.length,
         totalDislikes: reply.dislikes.length,
         replyGroup: reply.replyGroup,
+        liked,
         createdAt: reply.createdAt,
         updatedAt: reply.updatedAt,
       };
