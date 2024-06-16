@@ -12,8 +12,13 @@ export const getCommentsByProjectId = async (
   next: NextFunction
 ) => {
   const pid = req.params.pid;
+  const { page, limit } = req.query; // Pagination
   let liked: boolean = false;
   let decodedToken: JwtPayload | undefined;
+
+  // Parsing query parameters
+  const parsedPage = parseInt(page as string, 10) || 1;
+  const parsedLimit = parseInt(limit as string, 10) || 10;
 
   // Get token from cookie and decode it
   const token: string = await req.cookies.token;
@@ -24,11 +29,20 @@ export const getCommentsByProjectId = async (
   try {
     const comments = await Comment.find({
       $and: [{ projectId: pid }, { isReply: false }],
-    }).populate("sender", "username role -_id");
+    })
+      .populate("sender", "username role -_id")
+      .limit(parsedLimit)
+      .skip((parsedPage - 1) * parsedLimit)
+      .exec();
 
     if (comments.length === 0) {
       return res.status(404).json({ message: "No comments found" });
     }
+
+    const count = await Comment.countDocuments({
+      $and: [{ projectId: pid }, { isReply: false }],
+    });
+    const totalPages = Math.ceil(count / parsedLimit);
 
     const response = comments.map((comment) => {
       if (token && decodedToken) {
@@ -51,7 +65,16 @@ export const getCommentsByProjectId = async (
       };
     });
 
-    res.status(200).json({ message: "OK", body: response });
+    res.status(200).json({
+      message: "OK",
+      body: response,
+      pagination: {
+        totalPage: totalPages,
+        currentPage: parsedPage,
+        hasNextPage: parsedPage < totalPages ? true : false,
+        hasPrevPage: parsedPage > 1 ? true : false,
+      },
+    });
   } catch (error) {
     next(error);
   }
@@ -65,8 +88,13 @@ export const getRepliesComment = async (
 ) => {
   const projectId = req.params.pid;
   const groupId = req.params.gid;
+  const { page, limit } = req.query; // Pagination
   let liked: boolean = false;
   let decodedToken: JwtPayload | undefined;
+
+  // Parsing query parameters
+  const parsedPage = parseInt(page as string, 10) || 1;
+  const parsedLimit = parseInt(limit as string, 10) || 10;
 
   // Get token from cookie and decode it
   const token: string = await req.cookies.token;
@@ -77,7 +105,16 @@ export const getRepliesComment = async (
   try {
     const replies = await Comment.find({
       $and: [{ projectId: projectId }, { replyGroup: groupId }],
-    }).populate("sender", "username role -_id");
+    })
+      .populate("sender", "username role -_id")
+      .limit(parsedLimit)
+      .skip((parsedPage - 1) * parsedLimit)
+      .exec();
+
+    const count = await Comment.countDocuments({
+      $and: [{ projectId: projectId }, { replyGroup: groupId }],
+    });
+    const totalPages = Math.ceil(count / parsedLimit);
 
     const response = replies.map((reply) => {
       if (token && decodedToken) {
@@ -100,7 +137,16 @@ export const getRepliesComment = async (
       };
     });
 
-    res.status(200).json({ message: "Success", body: response });
+    res.status(200).json({
+      message: "Success",
+      body: response,
+      pagination: {
+        totalPage: totalPages,
+        currentPage: parsedPage,
+        hasNextPage: parsedPage < totalPages ? true : false,
+        hasPrevPage: parsedPage > 1 ? true : false,
+      },
+    });
   } catch (error) {
     next(error);
   }

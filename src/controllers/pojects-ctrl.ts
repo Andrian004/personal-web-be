@@ -3,7 +3,6 @@ import { v2 as cloudinary, UploadApiResponse } from "cloudinary";
 import { Project } from "../models/project-model";
 import { jwtDecode } from "jwt-decode";
 import { JwtPayload } from "jsonwebtoken";
-import { QueryParams } from "../interfaces/query-params-interface";
 
 // GET ALL PROJECT
 export const getAllProjects = async (
@@ -11,10 +10,14 @@ export const getAllProjects = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { page = 1, limit = 6, search = "" }: QueryParams = req.query;
-  const searchRegex = new RegExp(search, "gi");
+  const { page, limit, search = "" } = req.query;
   let liked: boolean = false;
   let decodedToken: JwtPayload;
+
+  // Parsing query parameters
+  const searchRegex = new RegExp(search.toString(), "gi");
+  const parsedPage = parseInt(page as string, 10) || 1;
+  const parsedLimit = parseInt(limit as string, 10) || 6;
 
   // Get token from cookie and decode it
   const token: string = await req.cookies.token;
@@ -24,8 +27,8 @@ export const getAllProjects = async (
 
   try {
     const projects = await Project.find({ title: { $regex: searchRegex } })
-      .limit(limit)
-      .skip((page - 1) * limit)
+      .limit(parsedLimit)
+      .skip((parsedPage - 1) * parsedLimit)
       .exec();
 
     if (projects.length === 0) {
@@ -33,7 +36,7 @@ export const getAllProjects = async (
     }
 
     const count = await Project.countDocuments();
-    const totalPages = Math.ceil(count / limit);
+    const totalPages = Math.ceil(count / parsedLimit);
 
     const outputProjects = projects.map((project) => {
       if (token) {
@@ -59,9 +62,9 @@ export const getAllProjects = async (
       body: outputProjects,
       pagination: {
         totalPage: totalPages,
-        currentPage: page,
-        hasNextPage: page < totalPages ? true : false,
-        hasPrevPage: page > 1 ? true : false,
+        currentPage: parsedPage,
+        hasNextPage: parsedPage < totalPages ? true : false,
+        hasPrevPage: parsedPage > 1 ? true : false,
       },
     });
   } catch (error) {
