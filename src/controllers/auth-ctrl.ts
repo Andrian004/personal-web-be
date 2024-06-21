@@ -72,11 +72,7 @@ export const signupFunction = async (
 };
 
 // SIGN IN ====================================================================
-export const loginFunction = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const loginFunction = async (req: Request, res: Response) => {
   const { username, password } = req.body;
 
   // validate username

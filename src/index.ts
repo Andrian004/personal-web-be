@@ -9,6 +9,7 @@ import { cloudinaryConfig, limiter } from "./configs/app-config";
 import { errorHandler } from "./middlewares/error-handler";
 
 // Import routers
+import { userRouters } from "./routes/user";
 import { projectRouters } from "./routes/projects";
 import { authRouters } from "./routes/auth";
 import { commentRouters } from "./routes/comments";
@@ -36,6 +37,7 @@ app.get("/", (req, res) => {
 });
 
 // Routes handlers
+app.use("/user", userRouters);
 app.use("/project", projectRouters);
 app.use("/auth", authRouters);
 app.use("/comment", commentRouters);

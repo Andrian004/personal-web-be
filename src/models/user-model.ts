@@ -4,6 +4,10 @@ const userSchema = new Schema(
   {
     email: { type: String, required: true, unique: true },
     username: { type: String, required: true, unique: true },
+    avatar: {
+      public_id: { type: String, default: "" },
+      imgUrl: { type: String, default: "" },
+    },
     password: { type: String, required: true },
     role: { type: String, default: "user" },
   },

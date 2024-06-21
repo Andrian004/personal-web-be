@@ -227,13 +227,9 @@ export const replyComment = async (
 };
 
 // DELETE A COMMENTS
-export const deleteComment = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  const pid = req.params.pid;
-  const cid = req.params.cid;
+export const deleteComment = (req: Request, res: Response) => {
+  // const pid = req.params.pid;
+  // const cid = req.params.cid;
 
   res.status(200).json({
     message: "Successfully deleted",
