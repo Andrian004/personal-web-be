@@ -5,9 +5,10 @@ const userRouters = express.Router();
 import { verifyToken } from "../middlewares/verify-token";
 
 // Import controllers
-import { updatePicture } from "../controllers/user-ctrl";
+import { updatePicture, updateUser } from "../controllers/user-ctrl";
 import { upload } from "../configs/app-config";
 
+userRouters.patch("/:uid", verifyToken, updateUser);
 userRouters.patch(
   "/picture/:uid",
   verifyToken,
