@@ -61,9 +61,9 @@ export const updatePicture = async (
     const response = await User.updateOne(
       { _id: userId },
       {
-        avatar: {
-          public_id: uploadResult.public_id,
-          imageUrl: uploadResult.secure_url,
+        $set: {
+          "avatar.public_id": uploadResult.public_id,
+          "avatar.imgUrl": uploadResult.secure_url,
         },
       }
     );
