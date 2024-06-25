@@ -3,6 +3,28 @@ import { v2 as cloudinary, UploadApiResponse } from "cloudinary";
 import validator from "validator";
 import { User } from "../models/user-model";
 
+export const getUserById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const userId = req.params.uid;
+
+  try {
+    const userdata = await User.findById(userId).select(
+      "_id username avatar role"
+    );
+
+    if (!userdata) {
+      return res.status(404).json({ message: "User not found!" });
+    }
+
+    res.status(200).json({ message: "user found", body: userdata });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const updateUser = async (
   req: Request,
   res: Response,

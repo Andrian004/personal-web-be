@@ -6,8 +6,13 @@ import { verifyToken } from "../middlewares/verify-token";
 import { upload } from "../configs/app-config";
 
 // Import controllers
-import { updatePicture, updateUser } from "../controllers/user-ctrl";
+import {
+  getUserById,
+  updatePicture,
+  updateUser,
+} from "../controllers/user-ctrl";
 
+userRouters.get("/:uid", verifyToken, getUserById);
 userRouters.patch("/:uid", verifyToken, updateUser);
 userRouters.patch(
   "/picture/:uid",

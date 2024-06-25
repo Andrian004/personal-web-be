@@ -59,13 +59,29 @@ export const signupFunction = async (
     // create jwt token
     const token = createJwt({
       userId: user._id,
-      username: user.username,
-      email: user.email,
-      role: user.role,
+    });
+
+    // Store token to cookie
+    res.cookie("jwtk", token, {
+      path: "/",
+      expires: new Date(Date.now() + 3600000 * 24 * 30),
+      httpOnly: true,
+      signed: true,
+      secure: process.env.NODE_ENV === "production" ? true : false,
     });
 
     // response after user successfully created
-    res.status(200).json({ message: "Sign up successfully", token });
+    res.status(200).json({
+      message: "Sign up successfully",
+      token,
+      body: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        avatar: user.avatar,
+        role: user.role,
+      },
+    });
   } catch (error) {
     next(error);
   }
@@ -105,13 +121,35 @@ export const loginFunction = async (req: Request, res: Response) => {
   // create token with jsonwebtoken(JWT)
   const authToken = createJwt({
     userId: user._id,
-    email: user.email,
-    username: user.username,
-    role: user.role,
+  });
+
+  // Store token to cookie
+  res.cookie("jwtk", authToken, {
+    path: "/",
+    expires: new Date(Date.now() + 3600000 * 24 * 30),
+    httpOnly: true,
+    signed: true,
+    secure: process.env.NODE_ENV === "production" ? true : false,
   });
 
   // send token to user
-  res.status(200).json({ message: "Login successfullly", token: authToken });
+  res.status(200).json({
+    message: "Login successfullly",
+    token: authToken,
+    body: {
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      avatar: user.avatar,
+      role: user.role,
+    },
+  });
+};
+
+// LOGOUT
+export const logout = async (req: Request, res: Response) => {
+  res.clearCookie("jwtk", { path: "/" });
+  res.status(200).json({ message: "Logout successfully" });
 };
 
 // DELETE ACCOUNT
