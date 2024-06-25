@@ -30,7 +30,7 @@ export const getCommentsByProjectId = async (
     const comments = await Comment.find({
       $and: [{ projectId: pid }, { isReply: false }],
     })
-      .populate("sender", "username role -_id")
+      .populate("sender", "username role avatar.imgUrl -_id")
       .limit(parsedLimit)
       .skip((parsedPage - 1) * parsedLimit)
       .exec();
@@ -106,7 +106,7 @@ export const getRepliesComment = async (
     const replies = await Comment.find({
       $and: [{ projectId: projectId }, { replyGroup: groupId }],
     })
-      .populate("sender", "username role -_id")
+      .populate("sender", "username role avatar.imgUrl -_id")
       .limit(parsedLimit)
       .skip((parsedPage - 1) * parsedLimit)
       .exec();
