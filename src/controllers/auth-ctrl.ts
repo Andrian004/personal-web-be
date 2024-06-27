@@ -93,7 +93,7 @@ export const loginFunction = async (req: Request, res: Response) => {
 
   // validate username
   if (
-    !validator.isAlphanumeric(username) ||
+    !validator.isAlphanumeric(username, "en-US", { ignore: " _" }) ||
     !validator.isLength(username, { min: 3, max: 25 })
   ) {
     return res.status(400).json({ message: "Invalid username!" });

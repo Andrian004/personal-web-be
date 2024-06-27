@@ -20,7 +20,7 @@ export const getAllProjects = async (
   const parsedLimit = parseInt(limit as string, 10) || 6;
 
   // Get token from cookie and decode it
-  const token: string = await req.cookies.token;
+  const token: string = await req.signedCookies.jwtk;
   if (token) {
     decodedToken = jwtDecode<JwtPayload>(token);
   }
@@ -82,7 +82,7 @@ export const getProjectById = async (
   let decodedToken: JwtPayload | undefined;
 
   // Get token from cookie and decode it
-  const token: string = await req.cookies.token;
+  const token: string = await req.signedCookies.jwtk;
   if (token) {
     decodedToken = jwtDecode<JwtPayload>(token);
   }

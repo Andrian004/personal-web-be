@@ -65,7 +65,17 @@ export const updatePicture = async (
     return res.status(400).json({ message: "Please upload an image" });
   }
 
+  const user = await User.findById(userId);
+  if (!user) {
+    return res.status(404).json({ message: "User not found!" });
+  }
+
   try {
+    if (user.avatar?.public_id) {
+      // delete image from cloudinary
+      await cloudinary.uploader.destroy(user.avatar.public_id);
+    }
+
     // store image to cloudinary
     const uploadResult: UploadApiResponse = await new Promise((resolve) => {
       cloudinary.uploader
