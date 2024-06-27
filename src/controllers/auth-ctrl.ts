@@ -152,13 +152,60 @@ export const logout = async (req: Request, res: Response) => {
   res.status(200).json({ message: "Logout successfully" });
 };
 
+// CHANGE PASSWORD
+export const changePassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const userId = req.params.uid;
+  const { newPassword, oldPassword } = req.body;
+
+  // validate new password
+  if (newPassword === oldPassword) {
+    return res.status(400).json({
+      message: "New password must be different from old password!",
+    });
+  }
+
+  if (!validator.isLength(newPassword, { min: 6 })) {
+    return res.status(400).json({
+      message: "Password must be at least 6 characters!",
+    });
+  }
+
+  try {
+    const user = await User.findById(userId, "password");
+    if (!user) return res.status(400).json({ message: "User not found" });
+
+    // Compare oldPassword and password in database
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid password!" });
+    }
+
+    // hashing pasword
+    const salt = await bcrypt.genSalt(10);
+    const hashPassword = await bcrypt.hash(newPassword, salt);
+    if (!hashPassword) {
+      return res.status(500).json({ message: "Server error!" });
+    }
+
+    // Update password in database
+    await User.findByIdAndUpdate(userId, { password: hashPassword });
+    res.status(200).json({ message: "Password updated" });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // DELETE ACCOUNT
 export const deleteAccountFunction = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  const userId = req.params.uuid;
+  const userId = req.params.uid;
 
   try {
     await User.findByIdAndDelete(userId);

@@ -10,11 +10,13 @@ import {
   signupFunction,
   deleteAccountFunction,
   logout,
+  changePassword,
 } from "../controllers/auth-ctrl";
 
 authRouters.post("/login", loginFunction);
 authRouters.post("/signup", signupFunction);
+authRouters.patch("/changePassword/:uid", verifyToken, changePassword);
 authRouters.delete("/logout", verifyToken, logout);
-authRouters.delete("/:uuid", deleteAccountFunction);
+authRouters.delete("/:uid", deleteAccountFunction);
 
 export { authRouters };
