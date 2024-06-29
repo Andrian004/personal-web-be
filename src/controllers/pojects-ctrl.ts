@@ -3,11 +3,13 @@ import { v2 as cloudinary, UploadApiResponse } from "cloudinary";
 import { Project } from "../models/project-model";
 import { jwtDecode } from "jwt-decode";
 import { JwtPayload } from "jsonwebtoken";
+import { UpdateWriteOpResult } from "mongoose";
+import { DefaultResponse } from "../interfaces/default-response";
 
 // GET ALL PROJECT
 export const getAllProjects = async (
   req: Request,
-  res: Response,
+  res: Response<DefaultResponse>,
   next: NextFunction
 ) => {
   const { page, limit, search = "" } = req.query;
@@ -32,7 +34,8 @@ export const getAllProjects = async (
       .exec();
 
     if (projects.length === 0) {
-      return res.status(404).json({ message: "Projects not found" });
+      res.statusCode = 404;
+      throw new Error("Project not found");
     }
 
     const count = await Project.countDocuments();
@@ -75,7 +78,7 @@ export const getAllProjects = async (
 // GET A PROJECT BY ID
 export const getProjectById = async (
   req: Request,
-  res: Response,
+  res: Response<DefaultResponse>,
   next: NextFunction
 ) => {
   let liked: boolean = false;
@@ -91,7 +94,8 @@ export const getProjectById = async (
     const project = await Project.findById(req.params.id);
 
     if (!project) {
-      return res.status(404).json({ message: "Project not found" });
+      res.statusCode = 404;
+      throw new Error("Project not found");
     }
 
     if (token && decodedToken) {
@@ -120,17 +124,18 @@ export const getProjectById = async (
 // ADD A PROJECT
 export const addProject = async (
   req: Request,
-  res: Response,
+  res: Response<DefaultResponse>,
   next: NextFunction
 ) => {
   const fileData = req.file;
   const { title, description, github, url } = req.body;
 
-  if (!fileData) {
-    return res.status(400).json({ message: "Please upload an image" });
-  }
-
   try {
+    if (!fileData) {
+      res.statusCode = 400;
+      throw new Error("Please upload an image");
+    }
+
     // store image to cloudinary
     const uploadResult: UploadApiResponse = await new Promise((resolve) => {
       cloudinary.uploader
@@ -167,7 +172,7 @@ export const addProject = async (
 // DELETE A PROJECT BY ID
 export const deleteProjectById = async (
   req: Request,
-  res: Response,
+  res: Response<DefaultResponse>,
   next: NextFunction
 ) => {
   const projectId = req.params.id;
@@ -177,7 +182,8 @@ export const deleteProjectById = async (
     const deletedProject = await Project.findByIdAndDelete(projectId);
 
     if (!deletedProject || !deletedProject.image) {
-      return res.status(404).json({ message: "Project not found!" });
+      res.statusCode = 404;
+      throw new Error("Project not found");
     }
 
     // Remove image in cloudinary by img public_id
@@ -192,7 +198,7 @@ export const deleteProjectById = async (
 // UPDATE A PROJECT BY ID
 export const updateProjectById = async (
   req: Request,
-  res: Response,
+  res: Response<DefaultResponse<UpdateWriteOpResult>>,
   next: NextFunction
 ) => {
   const { title, description, url, github } = req.body;

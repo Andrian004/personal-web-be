@@ -7,6 +7,11 @@ export const limiter = rateLimit({
   max: 100, // limit each IP to 100 requests per window (here, per minutes)
   standardHeaders: true,
   legacyHeaders: false,
+  handler: (req, res, next) => {
+    const customError = new Error("Too many requests, please try again later.");
+    res.statusCode = 429;
+    next(customError);
+  },
 });
 
 // multer

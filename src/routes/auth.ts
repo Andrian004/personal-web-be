@@ -17,6 +17,6 @@ authRouters.post("/login", loginFunction);
 authRouters.post("/signup", signupFunction);
 authRouters.patch("/changePassword/:uid", verifyToken, changePassword);
 authRouters.delete("/logout", verifyToken, logout);
-authRouters.delete("/:uid", deleteAccountFunction);
+authRouters.delete("/:uid", verifyToken, deleteAccountFunction);
 
 export { authRouters };

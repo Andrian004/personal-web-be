@@ -1,6 +1,6 @@
 export interface Pagination {
-  page?: number;
-  limit?: number;
+  page?: string;
+  limit?: string;
 }
 
 export interface QueryParams extends Pagination {

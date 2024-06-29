@@ -19,7 +19,8 @@ export const verifyToken = (
       cookieToken = req.signedCookies.jwtk;
 
       if (headerToken !== cookieToken) {
-        return res.status(401).json({ message: "Unauthorized!" });
+        res.statusCode = 401;
+        throw new Error("Unauthorized");
       }
 
       const verified = jwt.verify(
@@ -28,14 +29,15 @@ export const verifyToken = (
       );
 
       if (!verified) {
-        return res.status(401).json({ message: "Unauthorized!" });
+        res.statusCode = 401;
+        throw new Error("Unauthorized");
       }
 
       next();
     } catch (err) {
-      res.status(401).json({ message: "Unauthorized!" });
+      next(err);
     }
   } else {
-    res.status(403).json({ message: "Forbidden!" });
+    res.status(403).json({ message: "Forbidden!", stack: ":(" });
   }
 };

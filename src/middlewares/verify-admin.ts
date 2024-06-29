@@ -16,12 +16,13 @@ export const verifyAdmin = async (
       const user = await User.findById(decoded.id);
 
       if (!user || user.role !== "admin") {
-        return res.status(403).json({ message: "Forbidden!" });
+        res.statusCode = 403;
+        throw new Error("Forbidden!");
       }
 
       next();
     } catch (err) {
-      return res.status(403).json({ message: "Forbidden!" });
+      next(err);
     }
   } else {
     res.status(403).json({ message: "Forbidden!" });

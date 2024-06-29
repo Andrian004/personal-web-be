@@ -1,10 +1,11 @@
 import { NextFunction, Request, Response } from "express";
+import { ErrorResponse } from "../interfaces/error-response";
 
 export const errorHandler = (
   err: Error,
   req: Request,
-  res: Response,
-  next: NextFunction
+  res: Response<ErrorResponse>,
+  next: NextFunction // eslint-disable-line @typescript-eslint/no-unused-vars
 ) => {
   const statusCode = res.statusCode !== 200 ? res.statusCode : 500;
 

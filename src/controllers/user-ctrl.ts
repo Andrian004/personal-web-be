@@ -2,10 +2,13 @@ import { NextFunction, Request, Response } from "express";
 import { v2 as cloudinary, UploadApiResponse } from "cloudinary";
 import validator from "validator";
 import { User } from "../models/user-model";
+import { DefaultResponse } from "../interfaces/default-response";
+import { Document, UpdateWriteOpResult } from "mongoose";
 
+// GET USER BY ID
 export const getUserById = async (
   req: Request,
-  res: Response,
+  res: Response<DefaultResponse<Document<unknown>>>,
   next: NextFunction
 ) => {
   const userId = req.params.uid;
@@ -16,7 +19,8 @@ export const getUserById = async (
     );
 
     if (!userdata) {
-      return res.status(404).json({ message: "User not found!" });
+      res.statusCode = 404;
+      throw new Error("User not found!");
     }
 
     res.status(200).json({ message: "user found", body: userdata });
@@ -25,23 +29,25 @@ export const getUserById = async (
   }
 };
 
+// UPDATE USER
 export const updateUser = async (
   req: Request,
-  res: Response,
+  res: Response<DefaultResponse<UpdateWriteOpResult>>,
   next: NextFunction
 ) => {
   const userId = req.params.uid;
   const { username } = req.body;
 
-  // validate username
-  if (
-    !validator.isAlphanumeric(username, "en-US", { ignore: " _" }) ||
-    !validator.isLength(username, { min: 3, max: 25 })
-  ) {
-    return res.status(400).json({ message: "Invalid username!" });
-  }
-
   try {
+    // validate username
+    if (
+      !validator.isAlphanumeric(username, "en-US", { ignore: " _" }) ||
+      !validator.isLength(username, { min: 3, max: 25 })
+    ) {
+      res.statusCode = 400;
+      throw new Error("Invalid username!");
+    }
+
     const updateResponse = await User.updateOne(
       { _id: userId },
       { username: username }
@@ -53,24 +59,27 @@ export const updateUser = async (
   }
 };
 
+// UPDATE USER PICTURE
 export const updatePicture = async (
   req: Request,
-  res: Response,
+  res: Response<DefaultResponse<UpdateWriteOpResult>>,
   next: NextFunction
 ) => {
   const userId = req.params.uid;
   const fileData = req.file;
 
-  if (!fileData) {
-    return res.status(400).json({ message: "Please upload an image" });
-  }
-
-  const user = await User.findById(userId);
-  if (!user) {
-    return res.status(404).json({ message: "User not found!" });
-  }
-
   try {
+    if (!fileData) {
+      res.statusCode = 400;
+      throw new Error("Please upload an image");
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      res.statusCode = 404;
+      throw new Error("User not found!");
+    }
+
     if (user.avatar?.public_id) {
       // delete image from cloudinary
       await cloudinary.uploader.destroy(user.avatar.public_id);
