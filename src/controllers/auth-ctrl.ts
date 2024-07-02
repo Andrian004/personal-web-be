@@ -15,12 +15,16 @@ export const signupFunction = async (
 
   try {
     // validate username
-    if (
-      !validator.isAlphanumeric(username, "en-US", { ignore: " _" }) ||
-      !validator.isLength(username, { min: 3, max: 25 })
-    ) {
+    if (!validator.isAlphanumeric(username, "en-US", { ignore: " _" })) {
       res.statusCode = 400;
-      throw new Error("Invalid username!");
+      throw new Error("Username must be alphanumeric!");
+    }
+
+    if (!validator.isLength(username, { min: 3, max: 25 })) {
+      res.statusCode = 400;
+      throw new Error(
+        "Username must have at least 3 characters and max of 25 characters!"
+      );
     }
 
     // validate email
@@ -74,7 +78,7 @@ export const signupFunction = async (
     });
 
     // response after user successfully created
-    res.status(200).json({
+    res.status(201).json({
       message: "Sign up successfully",
       token,
       body: {
