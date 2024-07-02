@@ -1,6 +1,10 @@
 import rateLimit from "express-rate-limit";
 import multer from "multer";
 
+// morgan
+export const logFormat =
+  "[:date[iso]] :method: ':url HTTP/:http-version' :status :res[content-length] - :response-time ms";
+
 // express rate limit
 export const limiter = rateLimit({
   windowMs: 60 * 1000, // 1 minutes

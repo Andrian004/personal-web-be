@@ -1,10 +1,11 @@
 import express from "express";
+import morgan from "morgan";
 import helmet from "helmet";
 import cors from "cors";
 import "dotenv/config";
 import { v2 as cloudinary } from "cloudinary";
 import cookieParser from "cookie-parser";
-import { cloudinaryConfig, limiter } from "./configs/app-config";
+import { cloudinaryConfig, limiter, logFormat } from "./configs/app-config";
 import { errorHandler } from "./middlewares/error-handler";
 
 // Import routers
@@ -20,6 +21,7 @@ const app = express();
 app.set("trust proxy", 1 /* number of proxies between user and server */);
 
 // Middlewares
+app.use(morgan(logFormat));
 app.use(helmet());
 app.use(cors({ credentials: true, origin: ["http://localhost:5173"] }));
 app.use(limiter);
