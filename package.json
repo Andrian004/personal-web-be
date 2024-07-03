@@ -4,11 +4,11 @@
   "description": "Backend application for personal website.",
   "main": "src/index.ts",
   "scripts": {
-    "start": "ts-node src/index.ts",
+    "start": "tsc && node dist/index.js",
     "dev": "nodemon src/index.ts",
     "build": "tsc",
     "lint": "eslint --fix src test",
-    "preview": "node dist/src/index.js",
+    "preview": "node dist/index.js",
     "test": "jest",
     "typecheck": "tsc --noEmit"
   },

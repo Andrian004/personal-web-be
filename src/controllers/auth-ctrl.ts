@@ -143,7 +143,6 @@ export const loginFunction = async (
       httpOnly: true,
       signed: true,
       secure: process.env.NODE_ENV === "production" ? true : false,
-      sameSite: process.env.NODE_ENV === "production" ? "lax" : "none",
     });
 
     // send token to user
