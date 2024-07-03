@@ -177,18 +177,18 @@ export const changePassword = async (
   const userId = req.params.uid;
   const { newPassword, oldPassword } = req.body;
 
-  // validate new password
-  if (newPassword === oldPassword) {
-    res.statusCode = 400;
-    throw new Error("New password must be different from old password!");
-  }
-
-  if (!validator.isLength(newPassword, { min: 6 })) {
-    res.statusCode = 400;
-    throw new Error("Password must be at least 6 characters!");
-  }
-
   try {
+    // validate new password
+    if (newPassword === oldPassword) {
+      res.statusCode = 400;
+      throw new Error("New password must be different from old password!");
+    }
+
+    if (!validator.isLength(newPassword, { min: 6 })) {
+      res.statusCode = 400;
+      throw new Error("Password must be at least 6 characters!");
+    }
+
     const user = await User.findById(userId, "password");
     if (!user) {
       res.statusCode = 404;
