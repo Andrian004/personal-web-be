@@ -1,22 +1,19 @@
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 
-export const verifyToken = (
+export const verifyToken = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  let headerToken: string;
-  let cookieToken: string; // server only
-
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer") &&
     req.signedCookies.jwtk
   ) {
     try {
-      headerToken = req.headers.authorization.split(" ")[1];
-      cookieToken = req.signedCookies.jwtk;
+      const headerToken = req.headers.authorization.split(" ")[1];
+      const cookieToken = req.signedCookies.jwtk;
 
       if (headerToken !== cookieToken) {
         res.statusCode = 401;

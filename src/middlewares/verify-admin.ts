@@ -13,7 +13,7 @@ export const verifyAdmin = async (
     const decoded = jwtDecode<JwtPayload>(token);
 
     try {
-      const user = await User.findById(decoded.id);
+      const user = await User.findById(decoded.userId);
 
       if (!user || user.role !== "admin") {
         res.statusCode = 403;

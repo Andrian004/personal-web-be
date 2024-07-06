@@ -41,13 +41,23 @@ describe("POST /auth/signup", () => {
         "salt"
       );
       expect(User.prototype.save).toHaveBeenCalled();
-      expect(jwtUtils.createJwt).toHaveBeenCalledWith({
-        userId: userQueryResult._id,
-      });
+      expect(jwtUtils.createJwt).toHaveBeenCalledWith(
+        {
+          userId: userQueryResult._id,
+        },
+        { expiresIn: "1d" }
+      );
+      expect(jwtUtils.createJwt).toHaveBeenCalledWith(
+        {
+          userId: userQueryResult._id,
+        },
+        { expiresIn: "90d" }
+      );
       expect(response.status).toEqual(201);
       expect(response.body).toEqual({
         message: "Sign up successfully",
         token: "fakeToken",
+        refreshToken: "fakeToken",
         body: authResult,
       });
     });
@@ -164,13 +174,23 @@ describe("POST /auth/login", () => {
         "testpass",
         userQueryResult.password
       );
-      expect(jwtUtils.createJwt).toHaveBeenCalledWith({
-        userId: userQueryResult._id,
-      });
+      expect(jwtUtils.createJwt).toHaveBeenCalledWith(
+        {
+          userId: userQueryResult._id,
+        },
+        { expiresIn: "1d" }
+      );
+      expect(jwtUtils.createJwt).toHaveBeenCalledWith(
+        {
+          userId: userQueryResult._id,
+        },
+        { expiresIn: "90d" }
+      );
       expect(response.status).toEqual(200);
       expect(response.body).toEqual({
         message: "Login successfullly",
         token: "fakeToken",
+        refreshToken: "fakeToken",
         body: authResult,
       });
     });

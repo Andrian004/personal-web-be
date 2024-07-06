@@ -1,11 +1,12 @@
 import { NextFunction, Request, Response } from "express";
 import validator from "validator";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import { User } from "../models/user-model";
 import { createJwt } from "../libs/create-jwt";
 import { AuthResponse } from "../interfaces/auth-response";
 
-// SIGN UP ====================================================================
+// SIGN UP
 export const signupFunction = async (
   req: Request,
   res: Response<AuthResponse>,
@@ -63,15 +64,14 @@ export const signupFunction = async (
     // save new user to database
     const user = await newUser.save();
 
-    // create jwt token
-    const token = createJwt({
-      userId: user._id,
-    });
+    // create token and refreshToken with jsonwebtoken(JWT)
+    const accessToken = createJwt({ userId: user._id }, { expiresIn: "1d" });
+    const refreshToken = createJwt({ userId: user._id }, { expiresIn: "90d" });
 
     // Store token to cookie
-    res.cookie("jwtk", token, {
+    res.cookie("jwtk", accessToken, {
       path: "/",
-      expires: new Date(Date.now() + 3600000 * 24 * 30),
+      expires: new Date(Date.now() + 3600000 * 24),
       httpOnly: true,
       signed: true,
       secure: process.env.NODE_ENV === "production" ? true : false,
@@ -80,7 +80,8 @@ export const signupFunction = async (
     // response after user successfully created
     res.status(201).json({
       message: "Sign up successfully",
-      token,
+      token: accessToken,
+      refreshToken: refreshToken,
       body: {
         _id: user._id,
         username: user.username,
@@ -94,7 +95,7 @@ export const signupFunction = async (
   }
 };
 
-// SIGN IN ====================================================================
+// SIGN IN
 export const loginFunction = async (
   req: Request,
   res: Response<AuthResponse>,
@@ -131,15 +132,14 @@ export const loginFunction = async (
       throw new Error("Invalid password!");
     }
 
-    // create token with jsonwebtoken(JWT)
-    const authToken = createJwt({
-      userId: user._id,
-    });
+    // create token and refreshToken with jsonwebtoken(JWT)
+    const accessToken = createJwt({ userId: user._id }, { expiresIn: "1d" });
+    const refreshToken = createJwt({ userId: user._id }, { expiresIn: "90d" });
 
     // Store token to cookie
-    res.cookie("jwtk", authToken, {
+    res.cookie("jwtk", accessToken, {
       path: "/",
-      expires: new Date(Date.now() + 3600000 * 24 * 30),
+      expires: new Date(Date.now() + 3600000 * 24),
       httpOnly: true,
       signed: true,
       secure: process.env.NODE_ENV === "production" ? true : false,
@@ -148,7 +148,8 @@ export const loginFunction = async (
     // send token to user
     res.status(200).json({
       message: "Login successfullly",
-      token: authToken,
+      token: accessToken,
+      refreshToken: refreshToken,
       body: {
         _id: user._id,
         username: user.username,
@@ -166,6 +167,69 @@ export const loginFunction = async (
 export const logout = async (req: Request, res: Response) => {
   res.clearCookie("jwtk", { path: "/" });
   res.status(200).json({ message: "Logout successfully" });
+};
+
+// REFRESH TOKEN
+export const refreshToken = async (
+  req: Request,
+  res: Response<AuthResponse>,
+  next: NextFunction
+) => {
+  const refreshToken = req.body.refreshToken;
+
+  try {
+    const token: string = await req.signedCookies.jwtk;
+
+    if (!token) {
+      res.statusCode = 401;
+      throw new Error("Unauthorized!");
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const verifiedRefreshToken: any = jwt.verify(
+      refreshToken,
+      process.env.SECRET_KEY as string
+    );
+
+    if (!verifiedRefreshToken) {
+      res.statusCode = 401;
+      throw new Error("Unauthorized!");
+    }
+
+    const userExist = await User.findById(verifiedRefreshToken.userId);
+
+    if (!userExist) {
+      res.statusCode = 404;
+      throw new Error("User not found!");
+    }
+
+    const newAccessToken = createJwt(
+      { userId: userExist._id },
+      { expiresIn: "1d" }
+    );
+
+    res.cookie("jwtk", newAccessToken, {
+      path: "/",
+      expires: new Date(Date.now() + 3600000 * 24),
+      httpOnly: true,
+      signed: true,
+      secure: process.env.NODE_ENV === "production" ? true : false,
+    });
+
+    res.status(200).json({
+      message: "Refresh successfullly",
+      token: newAccessToken,
+      body: {
+        _id: userExist._id,
+        username: userExist.username,
+        email: userExist.email,
+        avatar: userExist.avatar,
+        role: userExist.role,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 // CHANGE PASSWORD

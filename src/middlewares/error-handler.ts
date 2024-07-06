@@ -7,10 +7,14 @@ export const errorHandler = (
   res: Response<ErrorResponse>,
   next: NextFunction // eslint-disable-line @typescript-eslint/no-unused-vars
 ) => {
-  const statusCode = res.statusCode !== 200 ? res.statusCode : 500;
+  let statusCode: number = 500;
+
+  if (err.name === "TokenExpiredError") statusCode = 401;
+  if (res.statusCode !== 200 && err.name !== "TokenExpiredError")
+    statusCode = res.statusCode;
 
   res.status(statusCode).json({
-    message: err.message,
+    message: statusCode !== 500 ? err.message : "Server error",
     stack: process.env.NODE_ENV === "production" ? ":(" : err.stack,
   });
 };

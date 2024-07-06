@@ -15,7 +15,7 @@ export const getUserById = async (
 
   try {
     const userdata = await User.findById(userId).select(
-      "_id username avatar role"
+      "_id email username avatar role"
     );
 
     if (!userdata) {
