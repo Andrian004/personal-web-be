@@ -23,7 +23,7 @@ app.set("trust proxy", 1 /* number of proxies between user and server */);
 // Middlewares
 app.use(morgan(logFormat));
 app.use(helmet());
-app.use(cors({ credentials: true, origin: ["http://localhost:5173"] }));
+app.use(cors({ credentials: true, origin: ["https://andriaja.vercel.app"] }));
 app.use(limiter);
 app.use(cookieParser(process.env.COOKIE_SECRET_KEY));
 app.use(express.json());
