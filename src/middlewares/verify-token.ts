@@ -35,7 +35,6 @@ export const verifyToken = async (
       next(err);
     }
   } else {
-    console.log(req.signedCookies);
     return res.status(403).json({ message: "Forbidden!", stack: ":(" });
   }
 };

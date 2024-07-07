@@ -167,7 +167,13 @@ export const loginFunction = async (
 
 // LOGOUT
 export const logout = async (req: Request, res: Response) => {
-  res.clearCookie("jwtk", { path: "/" });
+  res.clearCookie("jwtk", {
+    path: "/",
+    httpOnly: true,
+    signed: true,
+    secure: process.env.NODE_ENV === "production" ? true : false,
+    sameSite: "none",
+  });
   res.status(200).json({ message: "Logout successfully" });
 };
 
