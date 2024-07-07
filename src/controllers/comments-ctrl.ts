@@ -4,24 +4,25 @@ import { JwtPayload } from "jsonwebtoken";
 import { AddCommentBody, ReplyCommentBody } from "../types/comment-types";
 import { Comment } from "../models/comment-model";
 import { Project } from "../models/project-model";
-
+import { QueryParams } from "../interfaces/query-params-interface";
+import { DefaultResponse } from "../interfaces/default-response";
 // GET COMMENTS BY PROJECT ID
 export const getCommentsByProjectId = async (
   req: Request,
-  res: Response,
+  res: Response<DefaultResponse>,
   next: NextFunction
 ) => {
   const pid = req.params.pid;
-  const { page, limit } = req.query; // Pagination
+  const { page = "1", limit = "10" }: QueryParams = req.query; // Pagination
   let liked: boolean = false;
   let decodedToken: JwtPayload | undefined;
 
   // Parsing query parameters
-  const parsedPage = parseInt(page as string, 10) || 1;
-  const parsedLimit = parseInt(limit as string, 10) || 10;
+  const parsedPage = parseInt(page, 10);
+  const parsedLimit = parseInt(limit, 10);
 
   // Get token from cookie and decode it
-  const token: string = await req.cookies.token;
+  const token: string = await req.signedCookies.jwtk;
   if (token) {
     decodedToken = jwtDecode<JwtPayload>(token);
   }
@@ -36,7 +37,8 @@ export const getCommentsByProjectId = async (
       .exec();
 
     if (comments.length === 0) {
-      return res.status(404).json({ message: "No comments found" });
+      res.statusCode = 404;
+      throw new Error("No comments found");
     }
 
     const count = await Comment.countDocuments({
@@ -83,21 +85,21 @@ export const getCommentsByProjectId = async (
 // GET REPLY COMMENTS
 export const getRepliesComment = async (
   req: Request,
-  res: Response,
+  res: Response<DefaultResponse>,
   next: NextFunction
 ) => {
   const projectId = req.params.pid;
   const groupId = req.params.gid;
-  const { page, limit } = req.query; // Pagination
+  const { page = "1", limit = "10" }: QueryParams = req.query; // Pagination
   let liked: boolean = false;
   let decodedToken: JwtPayload | undefined;
 
   // Parsing query parameters
-  const parsedPage = parseInt(page as string, 10) || 1;
-  const parsedLimit = parseInt(limit as string, 10) || 10;
+  const parsedPage = parseInt(page, 10);
+  const parsedLimit = parseInt(limit, 10);
 
   // Get token from cookie and decode it
-  const token: string = await req.cookies.token;
+  const token: string = await req.signedCookies.jwtk;
   if (token) {
     decodedToken = jwtDecode<JwtPayload>(token);
   }
@@ -155,7 +157,7 @@ export const getRepliesComment = async (
 // ADD MAIN COMMENTS TO A PROJECT
 export const addComment = async (
   req: Request,
-  res: Response,
+  res: Response<DefaultResponse>,
   next: NextFunction
 ) => {
   const body: AddCommentBody = req.body;
@@ -163,7 +165,8 @@ export const addComment = async (
   try {
     const validProject = await Project.findById(body.projectId);
     if (!validProject) {
-      return res.status(404).json({ message: "Project not found" });
+      res.statusCode = 404;
+      throw new Error("Project not found");
     }
 
     const newCommentData = new Comment({
@@ -186,7 +189,7 @@ export const addComment = async (
 // REPLY A COMMENT
 export const replyComment = async (
   req: Request,
-  res: Response,
+  res: Response<DefaultResponse>,
   next: NextFunction
 ) => {
   const body: ReplyCommentBody = req.body;
@@ -227,7 +230,7 @@ export const replyComment = async (
 };
 
 // DELETE A COMMENTS
-export const deleteComment = (req: Request, res: Response) => {
+export const deleteComment = (req: Request, res: Response<DefaultResponse>) => {
   // const pid = req.params.pid;
   // const cid = req.params.cid;
 

@@ -1,11 +1,13 @@
 import { NextFunction, Request, Response } from "express";
 import { Project } from "../models/project-model";
 import { Comment } from "../models/comment-model";
+import { UpdateWriteOpResult } from "mongoose";
+import { DefaultResponse } from "../interfaces/default-response";
 
 // ADD LIKE
 export const addLike = async (
   req: Request,
-  res: Response,
+  res: Response<DefaultResponse<UpdateWriteOpResult>>,
   next: NextFunction
 ) => {
   const { pid, uid } = req.body;
@@ -25,7 +27,7 @@ export const addLike = async (
 // UNLIKE
 export const removeLike = async (
   req: Request,
-  res: Response,
+  res: Response<DefaultResponse<UpdateWriteOpResult>>,
   next: NextFunction
 ) => {
   const { pid, uid } = req.query;
@@ -45,7 +47,7 @@ export const removeLike = async (
 // GET ALL LIKES (DETAILED)
 export const getAllLikes = async (
   req: Request,
-  res: Response,
+  res: Response<DefaultResponse>,
   next: NextFunction
 ) => {
   const pid = req.params.pid;
@@ -54,7 +56,8 @@ export const getAllLikes = async (
     const response = await Project.findById(pid);
 
     if (!response) {
-      return res.status(404).json({ message: "Not Found" });
+      res.statusCode = 404;
+      throw new Error("Not Found");
     }
 
     const populatedLikes = await response.populate(
@@ -62,7 +65,7 @@ export const getAllLikes = async (
       "_id username email"
     );
 
-    res.status(200).json({ message: "OK", body: populatedLikes.likes });
+    res.status(200).json({ message: "OK", body: populatedLikes });
   } catch (error) {
     next(error);
   }
@@ -71,7 +74,7 @@ export const getAllLikes = async (
 // ADD COMMENT LIKE
 export const addCommentLike = async (
   req: Request,
-  res: Response,
+  res: Response<DefaultResponse<UpdateWriteOpResult>>,
   next: NextFunction
 ) => {
   const { cid, uid } = req.body; // get commentId & userId
@@ -91,7 +94,7 @@ export const addCommentLike = async (
 // UNLIKE COMMENT
 export const removeCommentLike = async (
   req: Request,
-  res: Response,
+  res: Response<DefaultResponse<UpdateWriteOpResult>>,
   next: NextFunction
 ) => {
   const { cid, uid } = req.query; // get commentId & userId
