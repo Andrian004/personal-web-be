@@ -8,7 +8,7 @@ export const logFormat =
 // express rate limit
 export const limiter = rateLimit({
   windowMs: 60 * 1000, // 1 minutes
-  max: 100, // limit each IP to 100 requests per window (here, per minutes)
+  max: 60, // limit each IP to 60 requests per window (here, per minutes)
   standardHeaders: true,
   legacyHeaders: false,
   handler: (req, res, next) => {
