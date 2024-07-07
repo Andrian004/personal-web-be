@@ -74,6 +74,8 @@ export const signupFunction = async (
       expires: new Date(Date.now() + 3600000 * 24),
       httpOnly: true,
       signed: true,
+      secure: process.env.NODE_ENV === "production" ? true : false,
+      sameSite: "none",
     });
 
     // response after user successfully created
@@ -141,6 +143,8 @@ export const loginFunction = async (
       expires: new Date(Date.now() + 3600000 * 24),
       httpOnly: true,
       signed: true,
+      secure: process.env.NODE_ENV === "production" ? true : false,
+      sameSite: "none",
     });
 
     // send token to user
@@ -211,6 +215,8 @@ export const refreshToken = async (
       expires: new Date(Date.now() + 3600000 * 24),
       httpOnly: true,
       signed: true,
+      secure: process.env.NODE_ENV === "production" ? true : false,
+      sameSite: "none",
     });
 
     res.status(200).json({
