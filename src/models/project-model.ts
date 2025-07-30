@@ -8,6 +8,7 @@ const projectSchema = new Schema(
       public_id: { type: String, required: true },
       imgUrl: { type: String, required: true },
     },
+    videoId: { type: String, required: false, default: "" },
     url: { type: String, required: true },
     github: { type: String, required: false, default: "" },
     likes: [{ type: Schema.Types.ObjectId, ref: "User" }],

@@ -111,6 +111,7 @@ export const getProjectById = async (
         github: project.github,
         url: project.url,
         image: project.image,
+        videoId: project.videoId,
         totalLikes: project.likes.length,
         totalComments: project.comments.length,
         liked,
@@ -128,7 +129,7 @@ export const addProject = async (
   next: NextFunction
 ) => {
   const fileData = req.file;
-  const { title, description, github, url } = req.body;
+  const { title, description, github, url, videoId } = req.body;
 
   try {
     if (!fileData) {
@@ -155,6 +156,7 @@ export const addProject = async (
       description,
       github,
       url,
+      videoId,
       image: {
         public_id: uploadResult.public_id,
         imgUrl: uploadResult.secure_url,
@@ -201,12 +203,12 @@ export const updateProjectById = async (
   res: Response<DefaultResponse<UpdateWriteOpResult>>,
   next: NextFunction
 ) => {
-  const { title, description, url, github } = req.body;
+  const { title, description, url, github, videoId } = req.body;
 
   try {
     const response = await Project.updateOne(
       { _id: req.params.id },
-      { title, description, url, github }
+      { title, description, url, github, videoId }
     );
     res
       .status(200)
